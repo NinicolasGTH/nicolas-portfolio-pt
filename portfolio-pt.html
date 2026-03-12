@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nicolas Macedo — Desenvolvedor Full-Stack</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #080808;
+      --bg2: #0f0f0f;
+      --bg3: #161616;
+      --border: rgba(255,255,255,0.07);
+      --border-bright: rgba(255,255,255,0.14);
+      --text: #e8e8e6;
+      --text-muted: #6b6b6b;
+      --text-dim: #3a3a3a;
+      --accent: #c8f542;
+      --accent-dim: rgba(200, 245, 66, 0.08);
+      --accent-mid: rgba(200, 245, 66, 0.15);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.4;
+    }
+
+    .font-display { font-family: 'Syne', sans-serif; }
+    .font-mono { font-family: 'DM Mono', monospace; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 2rem; }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 1.25rem 0;
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.3s, background 0.3s;
+    }
+    nav.scrolled {
+      background: rgba(8,8,8,0.92);
+      backdrop-filter: blur(20px);
+      border-color: var(--border);
+    }
+    nav .inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.1rem;
+      color: var(--text);
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+    .nav-logo span { color: var(--accent); }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--accent); }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding-top: 5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-glow {
+      position: absolute;
+      width: 600px; height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(200,245,66,0.04) 0%, transparent 70%);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+    .hero-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black, transparent);
+      pointer-events: none;
+    }
+    .hero-content { position: relative; z-index: 1; }
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 2rem;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.2s forwards;
+    }
+    .hero-tag::before { content: ''; width: 20px; height: 1px; background: var(--accent); }
+    .hero-name {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: clamp(3.5rem, 8vw, 7rem);
+      line-height: 0.92;
+      letter-spacing: -0.03em;
+      margin-bottom: 1.5rem;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.35s forwards;
+    }
+    .hero-name .line2 {
+      display: block;
+      color: transparent;
+      -webkit-text-stroke: 1px rgba(255,255,255,0.2);
+    }
+    .hero-name .accent { color: var(--accent); -webkit-text-stroke: 0; }
+    .hero-desc {
+      max-width: 480px;
+      color: var(--text-muted);
+      font-size: 1rem;
+      line-height: 1.7;
+      margin-bottom: 2.5rem;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.5s forwards;
+    }
+    .hero-actions {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.65s forwards;
+    }
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--accent);
+      color: #080808;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      padding: 0.85rem 1.75rem;
+      border-radius: 4px;
+      text-decoration: none;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+    .btn-primary:hover { opacity: 0.85; transform: translateY(-1px); }
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      border: 1px solid var(--border-bright);
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+      font-weight: 600;
+      font-size: 0.85rem;
+      padding: 0.85rem 1.75rem;
+      border-radius: 4px;
+      text-decoration: none;
+      transition: border-color 0.2s, background 0.2s, transform 0.2s;
+    }
+    .btn-ghost:hover { border-color: var(--accent); background: var(--accent-dim); transform: translateY(-1px); }
+    .hero-scroll {
+      position: absolute;
+      bottom: 2.5rem; left: 2rem;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--text-dim);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      writing-mode: vertical-rl;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      opacity: 0;
+      animation: fadeIn 1s 1.2s forwards;
+    }
+    .hero-scroll::after {
+      content: '';
+      width: 1px; height: 40px;
+      background: linear-gradient(to bottom, var(--text-dim), transparent);
+    }
+
+    /* SECTIONS */
+    section { padding: 7rem 0; }
+    .section-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      color: var(--accent);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .section-label::after {
+      content: '';
+      flex: 1;
+      max-width: 40px;
+      height: 1px;
+      background: var(--accent);
+      opacity: 0.5;
+    }
+    .section-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: clamp(2rem, 4vw, 3rem);
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      margin-bottom: 1rem;
+    }
+    .section-subtitle { color: var(--text-muted); max-width: 500px; margin-bottom: 4rem; }
+
+    /* ABOUT */
+    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: start; }
+    .about-text p { color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.8; }
+    .about-text p strong { color: var(--text); font-weight: 500; }
+    .about-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .stat-box { background: var(--bg2); padding: 1.75rem; transition: background 0.2s; }
+    .stat-box:hover { background: var(--bg3); }
+    .stat-num {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 2.2rem;
+      color: var(--accent);
+      line-height: 1;
+      margin-bottom: 0.35rem;
+    }
+    .stat-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* SKILLS */
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .skill-card { background: var(--bg2); padding: 2rem; transition: background 0.2s; }
+    .skill-card:hover { background: var(--bg3); }
+    .skill-card-icon {
+      width: 36px; height: 36px;
+      border-radius: 6px;
+      background: var(--accent-dim);
+      border: 1px solid rgba(200,245,66,0.15);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 1.25rem;
+      font-size: 1rem;
+    }
+    .skill-card-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.95rem; margin-bottom: 1rem; }
+    .skill-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .skill-tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      padding: 0.3rem 0.65rem;
+      border-radius: 3px;
+      background: var(--bg3);
+      border: 1px solid var(--border-bright);
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .skill-tag:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* PROJECTS */
+    .projects-list {
+      display: flex; flex-direction: column;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .project-item {
+      background: var(--bg2);
+      padding: 2rem 2.5rem;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 2rem;
+      align-items: start;
+      transition: background 0.2s;
+      cursor: pointer;
+    }
+    .project-item:hover { background: var(--bg3); }
+    .project-num {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--text-dim);
+      margin-bottom: 0.75rem;
+      letter-spacing: 0.1em;
+    }
+    .project-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 1.2rem;
+      margin-bottom: 0.6rem;
+      letter-spacing: -0.01em;
+    }
+    .project-desc {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      line-height: 1.7;
+      max-width: 580px;
+      margin-bottom: 1.25rem;
+    }
+    .project-stack { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .stack-tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.62rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: 3px;
+      background: var(--accent-dim);
+      border: 1px solid rgba(200,245,66,0.12);
+      color: var(--accent);
+      letter-spacing: 0.04em;
+    }
+    .project-arrow {
+      color: var(--text-dim);
+      font-size: 1.25rem;
+      transition: color 0.2s, transform 0.2s;
+      padding-top: 0.2rem;
+    }
+    .project-item:hover .project-arrow { color: var(--accent); transform: translate(2px, -2px); }
+
+    /* CONTACT */
+    .contact-box {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 4rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+    }
+    .contact-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: clamp(2rem, 3.5vw, 2.75rem);
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      margin-bottom: 1rem;
+    }
+    .contact-title .accent { color: var(--accent); }
+    .contact-desc { color: var(--text-muted); line-height: 1.7; margin-bottom: 2rem; }
+    .contact-links { display: flex; flex-direction: column; gap: 0.75rem; }
+    .contact-link {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      text-decoration: none;
+      color: var(--text);
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .contact-link:hover { border-color: var(--accent); background: var(--accent-dim); }
+    .contact-link-icon {
+      width: 32px; height: 32px;
+      background: var(--bg3);
+      border-radius: 4px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+    }
+    .contact-link-text { flex: 1; }
+    .contact-link-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.62rem;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 0.1rem;
+    }
+    .contact-link-value { font-size: 0.9rem; }
+    .contact-link-arrow { color: var(--text-dim); font-size: 0.85rem; transition: color 0.2s; }
+    .contact-link:hover .contact-link-arrow { color: var(--accent); }
+
+    footer { border-top: 1px solid var(--border); padding: 2rem 0; }
+    footer .inner {
+      max-width: 1100px; margin: 0 auto; padding: 0 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    footer p { font-family: 'DM Mono', monospace; font-size: 0.65rem; color: var(--text-dim); letter-spacing: 0.08em; }
+    .footer-dot { color: var(--accent); }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 768px) {
+      .about-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+      .contact-box { grid-template-columns: 1fr; padding: 2.5rem; gap: 2.5rem; }
+      .project-item { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+      .hero-scroll { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav id="nav">
+    <div class="inner">
+      <a href="#" class="nav-logo">NM<span>.</span></a>
+      <ul class="nav-links">
+        <li><a href="#sobre">Sobre</a></li>
+        <li><a href="#habilidades">Habilidades</a></li>
+        <li><a href="#projetos">Projetos</a></li>
+        <li><a href="#contato">Contato</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-grid"></div>
+    <div class="hero-glow"></div>
+    <div class="container hero-content">
+      <p class="hero-tag">Desenvolvedor Full-Stack · Brasil</p>
+      <h1 class="hero-name font-display">
+        Nicolas
+        <span class="line2">Macedo<span class="accent">.</span></span>
+      </h1>
+      <p class="hero-desc">
+        Construindo aplicações web modernas, APIs REST e ferramentas de automação.
+        Foco em código limpo, arquitetura escalável e soluções que funcionam de verdade.
+      </p>
+      <div class="hero-actions">
+        <a href="#projetos" class="btn-primary">
+          Ver Projetos
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+        <a href="https://github.com/NinicolasGTH" target="_blank" class="btn-ghost">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          GitHub
+        </a>
+      </div>
+    </div>
+    <p class="hero-scroll">rolar</p>
+  </section>
+
+  <!-- SOBRE -->
+  <section id="sobre">
+    <div class="container">
+      <div class="reveal">
+        <p class="section-label">01 — Sobre</p>
+        <h2 class="section-title font-display">Quem sou eu</h2>
+      </div>
+      <div class="about-grid reveal">
+        <div class="about-text">
+          <p>Sou um <strong>desenvolvedor full-stack</strong> brasileiro com experiência prática na construção de sistemas web completos — do modelamento do banco de dados até interfaces frontend polidas.</p>
+          <p>Minha stack abrange <strong>Python, TypeScript, JavaScript, C# e Go</strong>, com foco em design de APIs REST, arquitetura backend e desenvolvimento frontend moderno com React e Next.js.</p>
+          <p>Trabalho com conforto em todo o ciclo de desenvolvimento: modelagem de schemas, construção de APIs, integração de interfaces, automação de fluxos e deploy de aplicações containerizadas com Docker.</p>
+          <p><strong>Inglês B2+</strong> — confortável com documentação técnica, comunicação assíncrona e times internacionais.</p>
+        </div>
+        <div class="about-stats">
+          <div class="stat-box">
+            <div class="stat-num">6+</div>
+            <div class="stat-label">Linguagens</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-num">5+</div>
+            <div class="stat-label">Projetos</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-num">Full</div>
+            <div class="stat-label">Stack</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-num">B2+</div>
+            <div class="stat-label">Inglês</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HABILIDADES -->
+  <section id="habilidades" style="padding-top: 0;">
+    <div class="container">
+      <div class="reveal">
+        <p class="section-label">02 — Habilidades</p>
+        <h2 class="section-title font-display">Stack técnica</h2>
+        <p class="section-subtitle">Ferramentas e tecnologias que uso no dia a dia.</p>
+      </div>
+      <div class="skills-grid reveal">
+        <div class="skill-card">
+          <div class="skill-card-icon">⚡</div>
+          <div class="skill-card-title">Linguagens</div>
+          <div class="skill-tags">
+            <span class="skill-tag">Python</span>
+            <span class="skill-tag">TypeScript</span>
+            <span class="skill-tag">JavaScript</span>
+            <span class="skill-tag">C#</span>
+            <span class="skill-tag">Go</span>
+          </div>
+        </div>
+        <div class="skill-card">
+          <div class="skill-card-icon">🎨</div>
+          <div class="skill-card-title">Frontend</div>
+          <div class="skill-tags">
+            <span class="skill-tag">Next.js</span>
+            <span class="skill-tag">React</span>
+            <span class="skill-tag">Vite</span>
+            <span class="skill-tag">Tailwind</span>
+            <span class="skill-tag">ES6+</span>
+          </div>
+        </div>
+        <div class="skill-card">
+          <div class="skill-card-icon">🔧</div>
+          <div class="skill-card-title">Backend</div>
+          <div class="skill-tags">
+            <span class="skill-tag">FastAPI</span>
+            <span class="skill-tag">Node.js</span>
+            <span class="skill-tag">Express</span>
+            <span class="skill-tag">Gin (Go)</span>
+            <span class="skill-tag">Flask</span>
+            <span class="skill-tag">.NET</span>
+          </div>
+        </div>
+        <div class="skill-card">
+          <div class="skill-card-icon">🗄️</div>
+          <div class="skill-card-title">Bancos de Dados</div>
+          <div class="skill-tags">
+            <span class="skill-tag">PostgreSQL</span>
+            <span class="skill-tag">MongoDB</span>
+            <span class="skill-tag">MySQL</span>
+            <span class="skill-tag">SQLite</span>
+            <span class="skill-tag">Prisma</span>
+            <span class="skill-tag">GORM</span>
+          </div>
+        </div>
+        <div class="skill-card">
+          <div class="skill-card-icon">🚀</div>
+          <div class="skill-card-title">Ferramentas & DevOps</div>
+          <div class="skill-tags">
+            <span class="skill-tag">Git</span>
+            <span class="skill-tag">GitHub</span>
+            <span class="skill-tag">Docker</span>
+            <span class="skill-tag">Swagger</span>
+            <span class="skill-tag">REST APIs</span>
+            <span class="skill-tag">JWT</span>
+          </div>
+        </div>
+        <div class="skill-card">
+          <div class="skill-card-icon">🤖</div>
+          <div class="skill-card-title">Dados & IA</div>
+          <div class="skill-tags">
+            <span class="skill-tag">LangChain</span>
+            <span class="skill-tag">Automação</span>
+            <span class="skill-tag">Pandas</span>
+            <span class="skill-tag">Streamlit</span>
+            <span class="skill-tag">Plotly</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROJETOS -->
+  <section id="projetos">
+    <div class="container">
+      <div class="reveal">
+        <p class="section-label">03 — Projetos</p>
+        <h2 class="section-title font-display">Trabalhos selecionados</h2>
+        <p class="section-subtitle">Sistemas reais construídos do zero — APIs, apps full-stack e ferramentas de IA.</p>
+      </div>
+      <div class="projects-list reveal">
+
+        <div class="project-item" onclick="window.open('https://github.com/NinicolasGTH','_blank')">
+          <div>
+            <div class="project-num">001</div>
+            <div class="project-title font-display">Plataforma de Agente IA</div>
+            <p class="project-desc">
+              Plataforma conversacional full-stack com histórico de chat persistente, autenticação JWT, recuperação de senha e ferramentas integradas — calculadora algébrica (SymPy), clima em tempo real (OpenWeatherMap) e data/hora. Frontend em Next.js, backend em FastAPI, alimentado pelo Llama 3.3 70B via Groq.
+            </p>
+            <div class="project-stack">
+              <span class="stack-tag">Next.js</span>
+              <span class="stack-tag">FastAPI</span>
+              <span class="stack-tag">Python</span>
+              <span class="stack-tag">LangChain</span>
+              <span class="stack-tag">Groq API</span>
+              <span class="stack-tag">PostgreSQL</span>
+              <span class="stack-tag">JWT</span>
+              <span class="stack-tag">Docker</span>
+            </div>
+          </div>
+          <div class="project-arrow">↗</div>
+        </div>
+
+        <div class="project-item" onclick="window.open('https://github.com/NinicolasGTH/Concession-ria_Carros','_blank')">
+          <div>
+            <div class="project-num">002</div>
+            <div class="project-title font-display">Sistema de Concessionária de Automóveis</div>
+            <p class="project-desc">
+              Sistema completo de gerenciamento com cadastro de veículos, controle de compras/vendas, gestão de funcionários e dashboard analítico com gráficos interativos. Backend em Go com Gin e GORM, frontend em React com Vite, containerizado com Docker Compose.
+            </p>
+            <div class="project-stack">
+              <span class="stack-tag">Go</span>
+              <span class="stack-tag">Gin</span>
+              <span class="stack-tag">GORM</span>
+              <span class="stack-tag">React</span>
+              <span class="stack-tag">Vite</span>
+              <span class="stack-tag">PostgreSQL</span>
+              <span class="stack-tag">Streamlit</span>
+              <span class="stack-tag">Docker</span>
+            </div>
+          </div>
+          <div class="project-arrow">↗</div>
+        </div>
+
+        <div class="project-item" onclick="window.open('https://github.com/NinicolasGTH','_blank')">
+          <div>
+            <div class="project-num">003</div>
+            <div class="project-title font-display">Banking API — Backend Financeiro</div>
+            <p class="project-desc">
+              Backend de banco digital com gerenciamento de contas, saldo em tempo real, depósitos, saques e transferências Pix/TED com controle de concorrência. Transações ACID via PostgreSQL para evitar double-spending. JWT, Bcrypt e documentação Swagger.
+            </p>
+            <div class="project-stack">
+              <span class="stack-tag">Node.js</span>
+              <span class="stack-tag">Express</span>
+              <span class="stack-tag">PostgreSQL</span>
+              <span class="stack-tag">Prisma</span>
+              <span class="stack-tag">JWT</span>
+              <span class="stack-tag">Bcrypt</span>
+              <span class="stack-tag">Swagger</span>
+              <span class="stack-tag">Docker</span>
+            </div>
+          </div>
+          <div class="project-arrow">↗</div>
+        </div>
+
+        <div class="project-item" onclick="window.open('https://github.com/NinicolasGTH','_blank')">
+          <div>
+            <div class="project-num">004</div>
+            <div class="project-title font-display">Games API + Frontend Next.js</div>
+            <p class="project-desc">
+              API REST para catálogo de jogos com autenticação, controle de acesso por papéis (admin/usuário), gerenciamento de wishlist e documentação Swagger. Frontend temático cyberpunk em Next.js. Configurado para funcionalidades em tempo real via Socket.IO.
+            </p>
+            <div class="project-stack">
+              <span class="stack-tag">Node.js</span>
+              <span class="stack-tag">Express</span>
+              <span class="stack-tag">MongoDB</span>
+              <span class="stack-tag">Next.js</span>
+              <span class="stack-tag">JWT</span>
+              <span class="stack-tag">Swagger</span>
+              <span class="stack-tag">Socket.IO</span>
+              <span class="stack-tag">Docker</span>
+            </div>
+          </div>
+          <div class="project-arrow">↗</div>
+        </div>
+
+        <div class="project-item" onclick="window.open('https://github.com/NinicolasGTH','_blank')">
+          <div>
+            <div class="project-num">005</div>
+            <div class="project-title font-display">Instagram Clone — UI</div>
+            <p class="project-desc">
+              Recriação fiel da home page do Instagram com stories, feed de postagens (curtir/comentar/salvar) e sidebar de sugestões. Arquitetura baseada em componentes com responsividade básica.
+            </p>
+            <div class="project-stack">
+              <span class="stack-tag">React</span>
+              <span class="stack-tag">Vite</span>
+              <span class="stack-tag">JavaScript</span>
+              <span class="stack-tag">CSS3</span>
+              <span class="stack-tag">React Icons</span>
+            </div>
+          </div>
+          <div class="project-arrow">↗</div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTATO -->
+  <section id="contato">
+    <div class="container">
+      <div class="contact-box reveal">
+        <div>
+          <p class="section-label">04 — Contato</p>
+          <h2 class="contact-title font-display">
+            Vamos trabalhar<br><span class="accent">juntos.</span>
+          </h2>
+          <p class="contact-desc">
+            Aberto a projetos freelance, colaborações e novas oportunidades.
+            Entre em contato e vamos construir algo incrível.
+          </p>
+          <a href="mailto:nic.macedo2012@gmail.com" class="btn-primary" style="display:inline-flex;">
+            Enviar e-mail
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+        <div class="contact-links">
+          <a href="mailto:nic.macedo2012@gmail.com" class="contact-link">
+            <div class="contact-link-icon">✉️</div>
+            <div class="contact-link-text">
+              <span class="contact-link-label">E-mail</span>
+              <span class="contact-link-value">nic.macedo2012@gmail.com</span>
+            </div>
+            <span class="contact-link-arrow">↗</span>
+          </a>
+          <a href="https://github.com/NinicolasGTH" target="_blank" class="contact-link">
+            <div class="contact-link-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+            </div>
+            <div class="contact-link-text">
+              <span class="contact-link-label">GitHub</span>
+              <span class="contact-link-value">NinicolasGTH</span>
+            </div>
+            <span class="contact-link-arrow">↗</span>
+          </a>
+          <div class="contact-link" style="cursor:default;">
+            <div class="contact-link-icon">📍</div>
+            <div class="contact-link-text">
+              <span class="contact-link-label">Localização</span>
+              <span class="contact-link-value">Brasil — Remoto disponível</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="inner">
+      <p>© 2026 Nicolas Macedo <span class="footer-dot">·</span> Todos os direitos reservados</p>
+      <p>Feito com HTML <span class="footer-dot">·</span> Sem frameworks</p>
+    </div>
+  </footer>
+
+  <script>
+    const nav = document.getElementById('nav');
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('scrolled', window.scrollY > 40);
+    });
+
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => entry.target.classList.add('visible'), i * 80);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    reveals.forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>
